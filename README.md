@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Cau truc sinh vien
+// C?u trúc sinh viên
 typedef struct SinhVien {
     int maSV;
     char ten[50];
@@ -10,8 +10,12 @@ typedef struct SinhVien {
     struct SinhVien *next;
 } SV;
 
-// Tao mot sinh vien moi
-SV* taoSV(int ma, char ten[], float dtb) {
+// Hai con tr? ð?u – cu?i
+SV *head = NULL;
+SV *tail = NULL;
+
+// Hàm t?o SV m?i
+SV* taoSV(int ma, const char ten[], float dtb) {
     SV* sv = (SV*)malloc(sizeof(SV));
     sv->maSV = ma;
     strcpy(sv->ten, ten);
@@ -20,205 +24,307 @@ SV* taoSV(int ma, char ten[], float dtb) {
     return sv;
 }
 
-// Them sinh vien vao cuoi danh sach
-void themCuoi(SV **head, SV *sv) {
-    if (*head == NULL) *head = sv;
-    else {
-        SV *p = *head;
-        while (p->next != NULL)
-            p = p->next;
-        p->next = sv;
+// Thêm vào cu?i b?ng tail
+void themCuoi(SV *sv) {
+    if (head == NULL) {
+        head = tail = sv;
+    } else {
+        tail->next = sv;
+        tail = sv;
     }
 }
 
-// Nhap danh sach sinh vien
-void nhapDS(SV **head) {
-    int ma; char ten[50]; float dtb;
-    printf("\n=== NHAP DANH SACH SINH VIEN ===\n");
-    while (1) {
-        printf("Nhap ma sinh vien (<=0 de dung): ");
-        scanf("%d", &ma);
-        if (ma <= 0) break;
-        fflush(stdin);
-        printf("Nhap ho ten: ");
-        fgets(ten, sizeof(ten), stdin);
-        ten[strcspn(ten, "\n")] = '\0'; // xoa ky tu xuong dong
-        printf("Nhap diem trung binh: ");
-        scanf("%f", &dtb);
-        themCuoi(head, taoSV(ma, ten, dtb));
-    }
+// Hàm d?n buffer
+void clearBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
-// In danh sach sinh vien
-void inDS(SV *head) {
+// ============================
+// 1. KH?I T?O 6 D? LI?U M?U
+// ============================
+void khoiTaoDuLieuMau() {
+    const char *tenMau[10] = {
+        "Le Binh",
+        "Tran Binh",
+        "Le Cuong",
+        "Thanh Tuan",
+        "Chi Nam",
+        "Kieu Phuc",
+        "Truong An",
+        "Mai Trang",
+        "Van Tuan",
+        "Bui Tuan"
+    };
+
+    float dtbMau[10] = {7.5f, 6.8f, 4.2f, 8.0f, 6.4f, 7.0f, 4.9f, 8.5f, 6.8, 7.8f};
+
+    for (int i = 0; i < 10; i++) {
+        themCuoi(taoSV(240001 + i, tenMau[i], dtbMau[i]));
+    }
+
+    printf("\n>>> Da khoi tao 10 sinh vien mau.\n");
+}
+
+// ============================
+// 2. NH?P THÊM SINH VIÊN
+// ============================
+void nhapThemSV() {
+    int ma;
+    char ten[50];
+    float dtb;
+
+    printf("\n=== NHAP THEM SINH VIEN ===\n");
+
+    printf("Nhap ma sinh vien: ");
+    if (scanf("%d", &ma) != 1) {
+        printf("Nhap sai!\n");
+        clearBuffer();
+        return;
+    }
+    clearBuffer();
+
+    printf("Nhap ho ten: ");
+    fgets(ten, sizeof(ten), stdin);
+    ten[strcspn(ten, "\n")] = '\0';
+
+    printf("Nhap diem trung binh: ");
+    if (scanf("%f", &dtb) != 1) {
+        printf("Nhap sai!\n");
+        clearBuffer();
+        return;
+    }
+
+    themCuoi(taoSV(ma, ten, dtb));
+    printf("\n>>> Da them sinh vien thanh cong!\n");
+}
+
+// ============================
+// IN DANH SÁCH
+// ============================
+void inDS() {
     if (head == NULL) {
         printf("\nDanh sach rong!\n");
         return;
     }
     printf("\n%-10s %-25s %-10s\n", "Ma SV", "Ho ten", "Diem TB");
     printf("----------------------------------------------\n");
-    while (head != NULL) {
-        printf("%-10d %-25s %-10.2f\n", head->maSV, head->ten, head->dtb);
-        head = head->next;
+
+    SV *p = head;
+    while (p != NULL) {
+        printf("%-10d %-25s %-10.2f\n", p->maSV, p->ten, p->dtb);
+        p = p->next;
     }
 }
 
-// Tim vi tri sinh vien theo ma
-int timViTri(SV *head, int ma) {
+// ============================
+// T?m v? trí theo m?
+// ============================
+int timViTri(int ma) {
     int vt = 1;
-    while (head != NULL) {
-        if (head->maSV == ma) return vt;
-        head = head->next;
+    SV *p = head;
+    while (p != NULL) {
+        if (p->maSV == ma) return vt;
+        p = p->next;
         vt++;
     }
     return -1;
 }
 
-// Tim sinh vien theo DTB
-void timTheoDTB(SV *head, float dtb) {
+// ============================
+// T?m theo DTB
+// ============================
+void timTheoDTB(float dtb) {
+    SV *p = head;
     int dem = 0;
-    while (head != NULL) {
-        if (head->dtb == dtb) {
+
+    while (p != NULL) {
+        if (p->dtb == dtb) {
             if (dem == 0) {
-                printf("\nCac sinh vien co DTB = %.2f:\n", dtb);
+                printf("\nDanh sach sinh vien co DTB = %.2f:\n", dtb);
                 printf("%-10s %-25s %-10s\n", "Ma SV", "Ho ten", "Diem TB");
                 printf("----------------------------------------------\n");
             }
-            printf("%-10d %-25s %-10.2f\n", head->maSV, head->ten, head->dtb);
+            printf("%-10d %-25s %-10.2f\n", p->maSV, p->ten, p->dtb);
             dem++;
         }
-        head = head->next;
+        p = p->next;
     }
-    if (dem == 0) printf("\nKhong co sinh vien nao co DTB = %.2f\n", dtb);
+
+    if (dem == 0) printf("\nKhong co sinh vien co DTB = %.2f\n", dtb);
 }
 
-// Sap xep danh sach theo ten (tang dan)
-void sapXepTheoTen(SV **head) {
-    if (*head == NULL) return;
-    for (SV *i = *head; i->next != NULL; i = i->next) {
-        for (SV *j = i->next; j != NULL; j = j->next) {
-            if (strcmp(i->ten, j->ten) > 0) {
-                // hoan doi noi dung
-                int maTam = i->maSV;
-                float dtbTam = i->dtb;
-                char tenTam[50];
-                strcpy(tenTam, i->ten);
+// ============================
+// S?p x?p b?ng swap liên k?t
+// ============================
+void sapXepTheoTen() {
+    if (head == NULL || head->next == NULL) return;
 
-                i->maSV = j->maSV;
-                i->dtb = j->dtb;
-                strcpy(i->ten, j->ten);
+    int swapped;
 
-                j->maSV = maTam;
-                j->dtb = dtbTam;
-                strcpy(j->ten, tenTam);
+    do {
+        swapped = 0;
+        SV *prev = NULL;
+        SV *cur = head;
+
+        while (cur->next != NULL) {
+            SV *next = cur->next;
+
+            if (strcmp(cur->ten, next->ten) > 0) {
+                // Hoán ð?i node
+                if (prev == NULL)
+                    head = next;
+                else
+                    prev->next = next;
+
+                cur->next = next->next;
+                next->next = cur;
+
+                if (cur->next == NULL)
+                    tail = cur;
+
+                swapped = 1;
+                prev = next;
+            } else {
+                prev = cur;
+                cur = cur->next;
             }
         }
-    }
-    printf("\nDa sap xep danh sach tang dan theo ten.\n");
+    } while (swapped);
+
+    printf("\n>>> Da sap xep danh sach theo ten (swap lien ket).\n");
 }
 
-// Xoa sinh vien co DTB < 5.0
-void xoaDTBDuoi5(SV **head) {
-    while (*head != NULL && (*head)->dtb < 5.0) {
-        SV *tmp = *head;
-        *head = (*head)->next;
+// ============================
+// Xóa DTB < 5
+// ============================
+void xoaDTBDuoi5() {
+    while (head != NULL && head->dtb < 5.0f) {
+        SV *tmp = head;
+        head = head->next;
         free(tmp);
     }
-    SV *p = *head;
-    while (p != NULL && p->next != NULL) {
-        if (p->next->dtb < 5.0) {
+
+    if (head == NULL) {
+        tail = NULL;
+        return;
+    }
+
+    SV *p = head;
+    while (p->next != NULL) {
+        if (p->next->dtb < 5.0f) {
             SV *tmp = p->next;
             p->next = tmp->next;
+
+            if (tmp == tail)
+                tail = p;
+
             free(tmp);
         } else {
             p = p->next;
         }
     }
-    printf("\nDa xoa sinh vien co DTB < 5.0.\n");
+
+    printf("\n>>> Da xoa cac sinh vien co DTB < 5.\n");
 }
 
-// In sinh vien co diem tu 7.0 den 8.0
-void inKhoang7_8(SV *head) {
+// ============================
+// In sinh viên có DTB 7–8
+// ============================
+void inKhoang7_8() {
+    SV *p = head;
     int dem = 0;
-    printf("\nDanh sach sinh vien co DTB tu 7.0 den 8.0:\n");
+
+    printf("\nSV co DTB tu 7.0–8.0:\n");
     printf("%-10s %-25s %-10s\n", "Ma SV", "Ho ten", "Diem TB");
     printf("----------------------------------------------\n");
-    while (head != NULL) {
-        if (head->dtb >= 7.0 && head->dtb <= 8.0) {
-            printf("%-10d %-25s %-10.2f\n", head->maSV, head->ten, head->dtb);
+
+    while (p != NULL) {
+        if (p->dtb >= 7.0f && p->dtb <= 8.0f) {
+            printf("%-10d %-25s %-10.2f\n", p->maSV, p->ten, p->dtb);
             dem++;
         }
-        head = head->next;
+        p = p->next;
     }
-    if (dem == 0)
-        printf("Khong co sinh vien nao trong khoang nay.\n");
+
+    if (dem == 0) printf("Khong co SV nao.\n");
 }
 
-// Ham chinh
 int main() {
-    SV *head = NULL;
     int chon, ma;
     float dtb;
 
+    // Kh?i t?o d? li?u có s?n
+    khoiTaoDuLieuMau();
+
     do {
-        printf("\n================ MENU QUAN LY SINH VIEN ================\n");
-        printf("1. Tao danh sach sinh vien\n");
-        printf("2. Tim vi tri theo ma sinh vien\n");
+        printf("\n========== MENU ==========\n");
+        printf("1. Nhap them sinh vien\n");
+        printf("2. Tim vi tri theo ma\n");
         printf("3. Tim sinh vien theo DTB\n");
-        printf("4. Sap xep danh sach theo ten\n");
-        printf("5. Xoa sinh vien co DTB < 5.0\n");
-        printf("6. In sinh vien co DTB tu 7.0 den 8.0\n");
+        printf("4. Sap xep theo ten (swap node)\n");
+        printf("5. Xoa SV DTB < 5.0\n");
+        printf("6. In SV DTB 7.0–8.0\n");
         printf("7. In toan bo danh sach\n");
-        printf("0. Thoat chuong trinh\n");
-        printf("========================================================\n");
+        printf("0. Thoat\n");
+        printf("==========================\n");
         printf("Nhap lua chon: ");
-        scanf("%d", &chon);
+        if (scanf("%d", &chon) != 1) {
+            printf("Nhap sai!\n");
+            clearBuffer();
+            continue;
+        }
 
         switch (chon) {
-            case 1:
-                nhapDS(&head);
+            case 1: {
+                clearBuffer();
+                nhapThemSV();
                 break;
+            }
 
             case 2: {
-                printf("Nhap ma sinh vien can tim: ");
+                printf("Nhap ma SV: ");
                 scanf("%d", &ma);
-                int vt = timViTri(head, ma);
-                if (vt == -1)
-                    printf("Khong tim thay sinh vien co ma %d\n", ma);
-                else
-                    printf("Sinh vien co ma %d nam o vi tri thu %d\n", ma, vt);
+                int vt = timViTri(ma);
+                if (vt == -1) printf("Khong tim thay.\n");
+                else printf("SV o vi tri %d\n", vt);
                 break;
             }
 
             case 3: {
-                printf("Nhap diem trung binh can tim: ");
+                printf("Nhap DTB: ");
                 scanf("%f", &dtb);
-                timTheoDTB(head, dtb);
+                timTheoDTB(dtb);
                 break;
             }
 
-            case 4:
-                sapXepTheoTen(&head);
+            case 4: {
+                sapXepTheoTen();
                 break;
+            }
 
-            case 5:
-                xoaDTBDuoi5(&head);
+            case 5: {
+                xoaDTBDuoi5();
                 break;
+            }
 
-            case 6:
-                inKhoang7_8(head);
+            case 6: {
+                inKhoang7_8();
                 break;
+            }
 
-            case 7:
-                inDS(head);
+            case 7: {
+                inDS();
                 break;
+            }
 
-            case 0:
-                printf("\nThoat chuong trinh. Tam biet!\n");
+            case 0: {
+                printf("Thoat chuong trinh!\n");
                 break;
+            }
 
             default:
-                printf("\nLua chon khong hop le. Vui long nhap lai!\n");
+                printf("Lua chon sai!\n");
         }
 
     } while (chon != 0);
